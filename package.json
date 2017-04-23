@@ -1,0 +1,30 @@
+{
+  "name": "tumbleweed-discord",
+  "version": "0.0.1",
+  "description": "Follows tumblr blogs for tags to update channels",
+  "main": "tumbleweed.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/logicplace/TumbleWeed-Discord.git"
+  },
+  "keywords": [
+    "tumblr",
+    "discord",
+    "discord bot"
+  ],
+  "author": "LogicPlace",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/logicplace/TumbleWeed-Discord/issues"
+  },
+  "homepage": "http://tumbleweed.logicplace.com",
+  "dependencies": {
+    "discord.js": "^9.2.0",
+    "entities": "^1.1.1",
+    "tumblr": "^0.4.1",
+    "escape-string-regexp": "^1.0.5"
+  }
+}
