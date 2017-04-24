@@ -3,7 +3,7 @@
 // MIT Licensed
 
 module.exports = {
-	"formater": function (self, msg) {
+	"formatter": function (self, msg) {
 		if (typeof(msg) == "string") return self.format("string", msg);
 
 		var out = "";
