@@ -2,15 +2,25 @@
 // Copyright 2017 Sapphire Becker (logicplace.com)
 // MIT Licensed
 
+const readline = require('readline');
+
 const Base = require("./base.js");
 
 function ConsoleBot(Bot) {
-	process.stdin.resume();
 	process.stdin.setEncoding("utf8");
-	process.stdin.on("data", function (text) {
-		text = text.strip();
+	const rl = readline.createInterface({
+		input: process.stdin,
+		output: process.stdout,
+		prompt: "Enter message: "
+	});
+
+	rl.prompt();
+
+	rl.on("line", (text) => {
+		text = text.trim();
 		if (text == "/exit") process.exit();
 		Bot.command({}, text);
+		rl.prompt();
 	});
 }
 
