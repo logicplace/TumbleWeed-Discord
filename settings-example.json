@@ -1,0 +1,12 @@
+{
+	"prefix": "tw!",
+	"sender": "console",
+	"tumblr": {
+		"oauth": {
+			"consumer_key": "OAuth Consumer Key",
+			"consumer_secret": "OAuth Consumer Secret",
+			"token": "OAuth Access Token",
+			"token_secret": "OAuth Access Token Secret"
+		}
+	}
+}
