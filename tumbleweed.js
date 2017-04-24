@@ -4,37 +4,62 @@
 
 const Settings = require("./settings.json");
 const escapeRegExp = require("escape-string-regexp");
+const fs = require("fs");
 
 function TumbleWeed() {
 	this.settings = Settings;
 	this.prefix = Settings.prefix;
+	this.help = {}
 	this.commands = [];
 
-	// TODO: load receivers
+	// load receivers
+	this.receivers = [];
+	for(var r of fs.readdirSync("./receivers")) {
+		this.receivers.push(new (require("./receivers/" + r))(this));
+	}
 
-	this.sender = require("./senders/" + Settings.sender + ".js")(this);
+	this.sender = new (require("./senders/" + Settings.sender + ".js"))(this);
 }
 
-TumbleWeed.prototype.registerCommand = function(form, handler) {
-	this.commands.push(new Command(form, handler));
+TumbleWeed.prototype.registrar = function(listener) {
+	return {
+		"command": this.registerCommand.bind(this, listener),
+		"help": this.registerHelp.bind(this)
+	}
+}
+
+TumbleWeed.prototype.registerCommand = function(listener, form, handler) {
+	this.commands.push(new Command(this, listener, form, handler));
 };
 
+TumbleWeed.prototype.registerHelp = function(command, help) {
+	var helpObj;
+	if (command in this.help) {
+		helpObj = this.help[command];
+	} else {
+		helpObj = this.help[command] = [];
+	}
+
+	// TODO: normalize
+	helpObj.push(help);
+}
+
 TumbleWeed.prototype.command = function(event, input) {
-	if (this.input.substr(0, this.prefix.length) == this.prefix) {
+	if (input.substr(0, this.prefix.length) == this.prefix) {
 		input = input.substr(this.prefix.length);
 	}
 	else {
 		return false;
 	}
 
-	var event.bot = this;
+	event.bot = this;
 
 	var bestCommand = null, best = 0;
-	for (var i = 0; i < this.commands.length; i++) {
-		var command = this.commands[i];
+	for (var command of this.commands) {
 		var res = command.match(input, event);
 		if (res === true) return true;
 		else if (res > best) {
+			best = res;
 			bestCommand = command;
 		}
 	}
@@ -56,50 +81,89 @@ TumbleWeed.prototype.command = function(event, input) {
 	return false;
 };
 
+TumbleWeed.prototype.loadMemory = function(module) {
+	// TODO: memory persistence
+	return false;
+}
 
-function Command(bot, form, handler) {
+
+function Command(bot, listener, form, handler) {
 	this.bot = bot;
+	this.listener = listener;
 
 	var splits = form.split(" "), first = true;
 	this.args = [];
+	this.helpStr = "";
 	for (var i = 0; i < splits.length; ++i) {
-		var result = "", split = splits[i];
+		var split = splits[i], container = this.args;
+		if (split.charAt(0) == "^") {
+			// Quotable argument
+			container = [4];
+			this.args.push(container);
+			split = split.substr(1);
+		}
+
 		if (split.charAt(0) == "#") {
+			var result = "";
 			for (; splits[i].charAt(splits[i].length - 1) != "#"; ++i) {
 				result += " " + splits[i];
 			}
-			this.args.push([0, new RegExp("^" + result.substring(2, result.length - 1))])
+			result += " " + splits[i];
+			container.push([0, new RegExp("^" + result.substring(2, result.length - 1))])
 			first = false;
 		}
 		else if (split == "_") {
-			this.args.push([1]);
+			container.push([1]);
 			first = false;
 		}
 		else if (split == "*") {
-			this.args.push([2]);
+			container.push([2]);
 			first = false;
 		}
 		else {
 			if (first) this.helpStr += " " + split;
-			this.args.push([3, new RegExp("^" + escapeRegExp(split), "i")]);
+			container.push([3, new RegExp("^" + escapeRegExp(split), "i")]);
 		}
 	}
+
+	this.helpStr = this.helpStr.substr(1);
 
 	this.handler = handler;
 }
 
 var initialSpace = /^\s+/;
 var singleWord = /^\S+/;
+var quotable = /^"((""|[^"]+)*)"/;
 Command.prototype.match = function(command, ev) {
 	// Returns argument # this failed on or true for success.
 
 	var params = [];
 	for (var i = 0; i < this.args.length; i++) {
+		// Hella ugly
 		var arg = this.args[i];
+		if (arg[0] == 4) {
+			// Quotable argument case
+			if (arg[1][0] == 2) {
+				var tmp, words = [];
+				while ((tmp = command.match(quotable))) {
+					command = command.substr(tmp.length).replace(initialSpace, "");
+					words.push(tmp[1]);
+				}
+				params.push(words);
+				break;
+			} else {
+				var tmp = command.match(quotable);
+				if (tmp) {
+					command = tmp[1] + command.substr(tmp.length);
+					arg = arg[1];
+				}
+			}
+		}
+
 		switch (arg[0]) {
 		case 0:
 			// Given RegExp case.
-			var tmp = command.match(args[1]);
+			var tmp = command.match(arg[1]);
 			if (!tmp) return i;
 			params.push(tmp);
 			command = command.substr(tmp[0].length);
@@ -113,23 +177,31 @@ Command.prototype.match = function(command, ev) {
 			break;
 		case 2:
 			// Remaining words case
-			params.push(command.split(/ +/));
+			var words = command.split(/ +/);
+			// There's a chance of returning [ '' ] which we need to avoid.
+			params.push(words.length > 1 || words.length && words[0] ? words : []);
 			command = "";
 			break;
 		case 3:
 			// Literal word case
-			var tmp = command.match(args[1]);
+			var tmp = command.match(arg[1]);
 			if (!tmp) return i;
-			command = command.subtr(tmp[0].length);
+			command = command.substr(tmp[0].length);
 			break;
 		}
 
-		var spaces = command.match(initialSpace);
-		if (!spaces) return i; // Argument wasn't fully absorbed.
-		command = command.substr(spaces[0].length);
+		if (command) {
+			var spaces = command.match(initialSpace);
+			if (!spaces) return i; // Argument wasn't fully absorbed.
+			command = command.substr(spaces[0].length);
+		}
 	}
 
 	// If we got here, this command matched. Pass all the params.
-	this.handler.apply(ev, params);
+	this.handler.apply(this.listener, [ev].concat(params));
 	return true;
 };
+
+
+// Main
+var TW = new TumbleWeed();
