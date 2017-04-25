@@ -2,9 +2,10 @@
 // Copyright 2017 Sapphire Becker (logicplace.com)
 // MIT Licensed
 
-const Settings = require("./settings.json");
-const escapeRegExp = require("escape-string-regexp");
 const fs = require("fs");
+const escapeRegExp = require("escape-string-regexp");
+
+const Settings = require("./settings.json");
 
 function TumbleWeed() {
 	this.settings = Settings;
@@ -17,6 +18,8 @@ function TumbleWeed() {
 	for(var r of fs.readdirSync("./receivers")) {
 		this.receivers.push(new (require("./receivers/" + r))(this));
 	}
+
+	setInterval(this.saveMemory.bind(this), 60 * 60 * 1000);
 
 	this.sender = new (require("./senders/" + Settings.sender + ".js"))(this);
 }
@@ -81,9 +84,37 @@ TumbleWeed.prototype.command = function(event, input) {
 	return false;
 };
 
-TumbleWeed.prototype.loadMemory = function(module) {
-	// TODO: memory persistence
-	return false;
+TumbleWeed.prototype.loadMemory = function(mod, empty) {
+	var data;
+	try {
+		data = require("./memory/" + mod + ".json");
+	} catch (e) {
+		data = empty;
+		this.memory[mod] = data;
+		this.saveMemory(mod);
+	}
+	this.memory[mod] = data;
+	return data;
+}
+
+TumbleWeed.prototype.saveMemory = function(mod, sync) {
+	var sync = sync || false;
+	if (mod == "sync") {
+		sync = true;
+		mod = undefined;
+	}
+
+	if (mod) {
+		(sync ? fs.writeFileSync : fs.writeFile)("./memory/" + mod + ".json", JSON.stringify(this.memory[mod]), (err) => {
+			if (err) {
+				console.error("Error writing memory for", mod, err);
+			}
+		});
+	} else {
+		for (var mod in self.memory) {
+			self.saveMemory(mod, sync);
+		}
+	}
 }
 
 
@@ -205,3 +236,6 @@ Command.prototype.match = function(command, ev) {
 
 // Main
 var TW = new TumbleWeed();
+process.on('exit', (code) => {
+	TW.saveMemory("sync");
+});
