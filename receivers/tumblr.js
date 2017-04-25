@@ -40,10 +40,10 @@ function TumblrListener(Bot) {
 	this.bot = Bot;
 
 	// Setup instance
-	this.tumblr = Bot.loadMemory("tumblr") || {
+	this.tumblr = Bot.loadMemory("tumblr", {
 		"blogs": {},
 		"queries": [],
-	};
+	});
 
 	setInterval(this.runQueries.bind(this), 10 * 60 * 1000);
 }
