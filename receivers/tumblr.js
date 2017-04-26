@@ -3,6 +3,7 @@
 // MIT Licensed
 
 const Tumblr = require("tumblr");
+const deep_equal = require("deep-equal");
 
 function TumblrListener(Bot) {
 	// Register commands
@@ -48,7 +49,7 @@ function TumblrListener(Bot) {
 	setInterval(this.runQueries.bind(this), 10 * 60 * 1000);
 }
 
-function parseTags(tags, channel) {
+function parseTags(tags, context) {
 	var newTagSets = [];
 	// Parse the tags.
 	for (var i = 0; i < tags.length; ++i) {
@@ -56,7 +57,7 @@ function parseTags(tags, channel) {
 		// All tags must be represented in selected posts.
 		// If a tag is prefixed with a !, it is negated.
 		// Tags may have a # (following any !) but it's not required.
-		var tagSplits = tags[i].split(","), tagSet = [channel, [], []];
+		var tagSplits = tags[i].split(","), tagSet = [context, [], []];
 		for (var j = 0; j < tagSplits.length; j++) {
 			var tagSplit = tagSplits[j];
 			var target = tagSet[1];
@@ -85,7 +86,12 @@ function decodeURLTag(tag) {
 }
 
 TumblrListener.prototype.follow = function (ev, blogName, tags) {
-	var tumblr = this.tumblr, blog, newTagSets = parseTags(tags, ev.channel);
+	if (!ev.authority.content) {
+		ev.reply.error("tumblr.cmd.follow.no-permission");
+		return;
+	}
+	
+	var tumblr = this.tumblr, blog, newTagSets = parseTags(tags, ev.context);
 
 	// Ensure the blog is known.
 	if (!(blogName in this.tumblr.blogs)) {
@@ -100,6 +106,7 @@ TumblrListener.prototype.follow = function (ev, blogName, tags) {
 
 	// Add queries to the blog.
 	Array.prototype.push.apply(tumblr.blogs[blogName].queries, newTagSets);
+	ev.reply.print("tumblr.cmd.follow.success");
 }
 
 TumblrListener.prototype.followURL1 = function (ev, blogName, tags) {
@@ -112,7 +119,12 @@ TumblrListener.prototype.followURL2 = function (ev, urlParts) {
 
 
 TumblrListener.prototype.unfollow = function (ev, blogName, tags) {
-	var tumblr = this.tumblr, remTagSets = parseTags(tags, ev.channel);
+	if (!ev.authority.content) {
+		ev.reply.error("tumblr.cmd.unfollow.no-permission");
+		return;
+	}
+
+	var tumblr = this.tumblr, remTagSets = parseTags(tags, ev.context);
 
 	if (tags) {
 		// Remove tags only.
@@ -122,11 +134,11 @@ TumblrListener.prototype.unfollow = function (ev, blogName, tags) {
 			for (var i=queries.length - 1; i >= 0; --i) {
 				// query = [channel, +tags, -tags]
 				for (var remTagSet of remTagSets) {
-					if (array_compare(remTagSet, queries[i])) {
+					if (deep_equal(remTagSet, queries[i])) {
 						// If the channel and tags are all the same then this is to be removed.
 						queries.splice(i, 1);
 						if (!deleted) {
-							this.bot.sender.print(ev.channel, "Unfollowed tag set for blog.");
+							ev.reply.print("tumblr.cmd.unfollow.tags.success");
 							deleted = true;
 						}
 					}
@@ -135,21 +147,17 @@ TumblrListener.prototype.unfollow = function (ev, blogName, tags) {
 			if (deleted) {
 				if (queries.length == 0) {
 					// Nothing left to follow.
-					this.bot.sender.print(ev.channel, "I'm not following anything else on the blog, so I'm unfollowing the blog.");
+					ev.reply.print("tumblr.cmd.unfollow.tags.also-blog");
 					delete tumblr.blogs[blogName];
 				}
 			} else {
-				this.bot.sender.error(ev.channel, [
-					"string", "I'm not following that tag set. Try ",
-					"code", this.bot.prefix + "tumblr list " + blogName,
-					"string", "?"
-				]);
+				ev.reply.error("tumblr.cmd.unfollow.tags.not-found", {"blog": blogName});
 			}
 		}
 	} else {
 		// Remove whole blog.
 		delete tumblr.blogs[blogName];
-		this.bot.sender.print(ev.channel, "Unfollowed blog entirely.");
+		ev.reply.print("tumblr.cmd.unfollow.blog.success");
 	}
 }
 
@@ -179,26 +187,32 @@ TumblrListener.prototype.list = function (ev, list) {
 				var blog = blogs[blogName];
 				var queries = [];
 				for (var query of blog.queries) {
-					if (query[0] == ev.channel) queries.push(query);
+					if (deep_equal(query[0], ev.context)) queries.push(query);
 				}
 
 				switch (queries.length) {
 				case 0:
-					this.bot.sender.error(ev.channel, "I'm not following a blog by the name of " + blogName);
+					ev.reply.error("tumblr.cmd.list.not-found", {"blog": blogName});
 					break;
 				case 1:
-					this.bot.sender.print(ev.channel, "I am following " + tagSetString(queries[0]) + " from that blog.");
+					ev.reply.print("tumblr.cmd.list.tagset1", {
+						"blog": blogName,
+						"tags": tagSetString(queries[0])
+					});
 					break;
 				default:
-					var msg = "I am following posts of these tag sets from " + blogName + ":";
+					var msg = "";
 					for (var query of queries) {
 						msg += "\n* " + tagSetString(query);
 					}
-					this.bot.sender.print(ev.channel, msg);
+					ev.reply.print([
+						"string", "tumblr.cmd.list.tagsets",
+						"string", msg
+					], {"blog": blogName});
 				}
 				
 			} else {
-				this.bot.sender.error(ev.channel, "I'm not following a blog by the name of " + blogName);
+				ev.reply.error("tumblr.cmd.list.not-found", {"blog": blogName});
 			}
 		}
 	} else {
@@ -207,9 +221,12 @@ TumblrListener.prototype.list = function (ev, list) {
 			names.push(blogName);
 		}
 		if (names.length) {
-			this.bot.sender.print(ev.channel, "Following blogs: " + names.join(", "));
+			ev.reply.print([
+				"string", "tumblr.cmd.list.blogs",
+				"string", names.join(", ")
+			]);
 		} else {
-			this.bot.sender.print(ev.channel, "I'm not following any blogs for this channel.");
+			ev.reply.print("tumblr.cmd.list.no-blogs");
 		}
 	}
 }
@@ -239,7 +256,7 @@ function checkUpdated(blog, error, info) {
 	var self = this;
 	info = info.blog;
 	if (error) {
-		this.bot.sender.error("Error receiving blog info: " + error);
+		this.bot.sender.error("tumblr.update.error", {"error": error});
 	}
 	else if (info.updated > blog.updated) {
 		var need = info.posts - blog.posts + 1, updated = blog.updated;
@@ -263,12 +280,10 @@ function checkUpdated(blog, error, info) {
 			if (posts[i].timestamp > updated) {
 				var sentTo = {};
 				for (var query of queries) {
-					if (!(query[0] in sentTo)) {
-						self.bot.sender.print(query[0], [
-							"string", "I may have missed some posts from ",
-							"no-preview", response.blog.url,
-						]);
-						sentTo[query[0]] = true;
+					var strq0 = JSON.stringify(query[0]);
+					if (!(strq0 in sentTo)) {
+						self.bot.sender.print(query[0], "tumblr.update.missed", {"url": response.blog.url});
+						sentTo[strq0] = true;
 					}
 				}
 			}
@@ -283,7 +298,9 @@ function checkUpdated(blog, error, info) {
 						var fail = false;
 
 						// Don't need to send the same post to a channel more than once.
-						if (query[0] in sentTo) continue;
+						var strq0 = JSON.stringify(query[0]);
+						if (strq0 in sentTo) continue;
+						sentTo[strq0] = true;
 
 						var ins = query[1], outs = query[2];
 
@@ -320,25 +337,6 @@ function array2obj(array) {
 		obj[array[i]] = true;
 	}
 	return obj;
-}
-
-function array_compare(array1, array2) {
-	var i = array1.length;
-	if (i != array2.length) return false;
-
-	for (--i; i >= 0; --i) {
-		var a1i = array1[i];
-		if (typeof(a1i) == "undefined") {
-			if (typeof(array2[i]) != "undefined") return false;
-		}
-		else if (a1i.constructor.name == "Array") {
-			if (array2[i].constructor.name != "Array") return false;
-			if (!array_compare(a1i, array2[i])) return false;
-		}
-		else if (a1i !== array2[i]) return false;
-	}
-
-	return true;
 }
 
 module.exports = TumblrListener;
