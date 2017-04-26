@@ -22,20 +22,27 @@ function ConsoleBot(Bot) {
 		Bot.command({}, text);
 		rl.prompt();
 	});
+
+	this.event = {
+		"prefix": Bot.prefix,
+		"localization": {},
+	}
 }
 
+ConsoleBot.prototype.formatter = Base.formatter;
+
 ConsoleBot.prototype.print = function(dest, msg) {
-	var output = Base.formatter(this, msg);
+	var output = this.formatter(this.event, msg);
 	console.log(output);
 };
 
 ConsoleBot.prototype.warn = function(dest, msg) {
-	var output = Base.formatter(this, msg);
+	var output = this.formatter(this.event, msg);
 	console.warn(output);
 };
 
 ConsoleBot.prototype.error = function(dest, msg) {
-	var output = Base.formatter(this, msg);
+	var output = this.formatter(this.event, msg);
 	console.error(output);
 };
 
