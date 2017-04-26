@@ -12,6 +12,7 @@ function TumbleWeed() {
 	this.prefix = Settings.prefix;
 	this.help = {}
 	this.commands = [];
+	this.localization = require("./enUS.json");
 
 	// load receivers
 	this.receivers = [];
@@ -125,15 +126,14 @@ function Command(bot, listener, form, handler) {
 	var splits = form.split(" "), first = true;
 	this.args = [];
 	this.helpStr = "";
+	
+	var bareCases = {
+		"_":  1, "*":  2,
+		"^_": 4, "^*": 5,
+	};
+
 	for (var i = 0; i < splits.length; ++i) {
 		var split = splits[i], container = this.args;
-		if (split.charAt(0) == "^") {
-			// Quotable argument
-			container = [4];
-			this.args.push(container);
-			split = split.substr(1);
-		}
-
 		if (split.charAt(0) == "#") {
 			var result = "";
 			for (; splits[i].charAt(splits[i].length - 1) != "#"; ++i) {
@@ -143,12 +143,8 @@ function Command(bot, listener, form, handler) {
 			container.push([0, new RegExp("^" + result.substring(2, result.length - 1))])
 			first = false;
 		}
-		else if (split == "_") {
-			container.push([1]);
-			first = false;
-		}
-		else if (split == "*") {
-			container.push([2]);
+		else if (split in bareCases) {
+			container.push([bareCases[split]]);
 			first = false;
 		}
 		else {
@@ -163,34 +159,14 @@ function Command(bot, listener, form, handler) {
 }
 
 var initialSpace = /^\s+/;
-var singleWord = /^\S+/;
+var singleWord = /^(\S+)/;
 var quotable = /^"((""|[^"]+)*)"/;
 Command.prototype.match = function(command, ev) {
 	// Returns argument # this failed on or true for success.
 
 	var params = [];
 	for (var i = 0; i < this.args.length; i++) {
-		// Hella ugly
 		var arg = this.args[i];
-		if (arg[0] == 4) {
-			// Quotable argument case
-			if (arg[1][0] == 2) {
-				var tmp, words = [];
-				while ((tmp = command.match(quotable))) {
-					command = command.substr(tmp.length).replace(initialSpace, "");
-					words.push(tmp[1]);
-				}
-				params.push(words);
-				break;
-			} else {
-				var tmp = command.match(quotable);
-				if (tmp) {
-					command = tmp[1] + command.substr(tmp.length);
-					arg = arg[1];
-				}
-			}
-		}
-
 		switch (arg[0]) {
 		case 0:
 			// Given RegExp case.
@@ -219,6 +195,21 @@ Command.prototype.match = function(command, ev) {
 			if (!tmp) return i;
 			command = command.substr(tmp[0].length);
 			break;
+		case 4: case 5:
+			// Quotable words cases
+			var tmp, case4 = arg[0] == 4, quotes = [];
+			while ((tmp = command.match(quotable)) || (tmp = command.match(singleWord))) {
+				command = command.substr(tmp.length);
+				quotes.push(tmp[1]);
+				if (case4) break;
+				command = command.replace(initialSpace, "");
+			}
+			if (case4) {
+				if (params.length != 1) return i;
+				params.push(quotes[0]);
+			} else {
+				params.push(quotes);
+			}
 		}
 
 		if (command) {
