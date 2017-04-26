@@ -1,0 +1,47 @@
+{
+	"discord.cmd.nick.no-permission": "You do not have permission to change my name.",
+	"discord.cmd.avatar.no-permission": "You do not have permission to change my avatar.",
+	"discord.cmd.prefix.no-permission": "You do not have permission to change the command prefix.",
+	"discord.cmd.prefix.success": "Command prefix has been changed.",
+	"discord.cmd.locale.no-permission": "You do not have permission to change my language.",
+	"discord.cmd.locale.bad-file": "That's an inappropriate locale name. It should be something like: enUS",
+	"discord.cmd.locale.no-file": [
+		"string", "I don't know that language, use ",
+		"code", "{prefix}locales",
+		"string", " to see what I know."
+	],
+	"discord.cmd.locale.success": "Language updated. All custom messages overwritten.",
+	"discord.cmd.locales.pfx": "I know: ",
+	"discord.cmd.local.no-permission": "You do not have permission to change what I say.",
+	"discord.cmd.local.no-id": [
+		"string", "That message ID does not exist. See ",
+		"no-preview", "http://github.com/logicplace/TumbleWeed-Discord/blob/release/enUS.json",
+		"string", " for a list."
+	],
+	"discord.cmd.local.success": "Speech pattern changed.",
+
+	"tumblr.cmd.follow.no-permission": "You do not have permission to do that.",
+	"tumblr.cmd.follow.success": "I'm now following that.",
+	"tumblr.cmd.unfollow.no-permission": "You do not have permission to do that.",
+	"tumblr.cmd.unfollow.tags.success": "Unfollowed tag set for blog.",
+	"tumblr.cmd.unfollow.tags.also-blog": "I'm not following anything else on the blog, so I'm unfollowing the blog.",
+	"tumblr.cmd.unfollow.tags.not-found": [
+		"string", "I'm not following that tag set. Try ",
+		"code", "{prefix}tumblr list {blog}",
+		"string", "?"
+	],
+	"tumblr.cmd.unfollow.blog.success": "Unfollowed blog entirely.",
+	"tumblr.cmd.list.not-found": "I'm not following a blog by the name of {blog}",
+	"tumblr.cmd.list.tagset1": "I am following {tags} from that blog.",
+	"tumblr.cmd.list.tagsets": "I am following posts of these tag sets from {blog}:",
+	"tumblr.cmd.list.blogs": "Following blogs: ",
+	"tumblr.cmd.list.no-blogs": "I'm not following any blogs for this channel.",
+	"tumblr.update.error": "Error receiving blog info: {error}",
+	"tumblr.update.missed": [
+		"string", "I may have missed some posts from ",
+		"no-preview", "{url}",
+	]
+
+	"warn": "Warning: ",
+	"error": "Error: "
+}
