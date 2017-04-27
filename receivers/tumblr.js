@@ -9,12 +9,12 @@ function TumblrListener(Bot) {
 	// Register commands
 	var registrar = Bot.registrar(this);
 	registrar.command("tumblr follow _ ^*", this.follow);
-	registrar.command("follow #https?://(.*)\\.tumblr\\.com/?$# ^*", this.followURL1);
-	registrar.command("follow #https?://(.*)\\.tumblr\\.com/tagged/(.*)$#", this.followURL2);
+	registrar.command("follow #<?https?://(.*)\\.tumblr\\.com/?>?$# ^*", this.followURL1);
+	registrar.command("follow #<?https?://(.*)\\.tumblr\\.com/tagged/(.*?)>?$#", this.followURL2);
 
 	registrar.command("tumblr unfollow _ ^*", this.unfollow);
-	registrar.command("unfollow #https?://(.*)\\.tumblr\\.com/?# ^*", this.unfollowURL1);
-	registrar.command("unfollow #https?://(.*)\\.tumblr\\.com/tagged/(.*)#", this.unfollowURL2);
+	registrar.command("unfollow #<?https?://(.*)\\.tumblr\\.com/?>?$# ^*", this.unfollowURL1);
+	registrar.command("unfollow #<?https?://(.*)\\.tumblr\\.com/tagged/(.*?)>?$#", this.unfollowURL2);
 
 	registrar.command("tumblr list *", this.list);
 
@@ -38,15 +38,19 @@ function TumblrListener(Bot) {
 		"command": "follow TumblrURL [Tags]",
 	});
 
-	this.bot = Bot;
-
 	// Setup instance
 	this.tumblr = Bot.loadMemory("tumblr", {
 		"blogs": {},
-		"queries": [],
 	});
 
+	// Make connections to all saved blogs
+	this.blogs = {};
+	for (let blog in this.tumblr.blogs) {
+		this.blogs[blog] = new Tumblr.Blog(this.tumblr.blogs[blog].blog, Bot.settings.tumblr.oauth);
+	}
+
 	setInterval(this.runQueries.bind(this), 10 * 60 * 1000);
+	this.onInit = this.runQueries.bind(this);
 }
 
 function parseTags(tags, context) {
@@ -67,7 +71,7 @@ function parseTags(tags, context) {
 			}
 
 			if (tagSplit.charAt(0) == "#") {
-				target.push(tagSplit.subtr(1));
+				target.push(tagSplit.substr(1));
 			}
 			else {
 				target.push(tagSplit);
@@ -96,12 +100,13 @@ TumblrListener.prototype.follow = function (ev, blogName, tags) {
 	// Ensure the blog is known.
 	if (!(blogName in this.tumblr.blogs)) {
 		blog = tumblr.blogs[blogName] = {
-			"blog": new Tumblr.Blog(blogName + ".tumblr.com", this.bot.settings.tumblr.oauth),
+			"blog": blogName + ".tumblr.com",
 			"queries": [],
 			"updated": 0,
 			"posts": 0
 		}
-		blog.blog.info(checkUpdated.bind(this, blog));
+		var conn = this.blogs[blogName] = new Tumblr.Blog(blog.blog, this.bot.settings.tumblr.oauth);
+		conn.info(checkUpdated.bind(this, blogName));
 	}
 
 	// Add queries to the blog.
@@ -235,26 +240,18 @@ TumblrListener.prototype.list = function (ev, list) {
 TumblrListener.prototype.runQueries = function () {
 	var blogs = this.tumblr.blogs;
 	for (var blogName in blogs) {
-		var blog = blogs[blogName];
-		blog.blog.info(checkUpdated.bind(this, blog))
-	}
-
-	var queries = this.tumblr.queries;
-	for (var i = 0; i < queries.length; ++i) {
-		var query = queries[i];
-
-		switch (query[0]) {
-		case 0:
-			// Query blog for new post with tags case.
-			break;
-		}
+		this.blogs[blogName].info(checkUpdated.bind(this, blogName))
 	}
 }
 
 
-function checkUpdated(blog, error, info) {
+function checkUpdated(blogName, error, info) {
 	var self = this;
 	info = info.blog;
+
+	var blog = this.tumblr.blogs[blogName];
+	var conn = this.blogs[blogName];
+
 	if (error) {
 		this.bot.sender.error("tumblr.update.error", {"error": error});
 	}
@@ -270,7 +267,7 @@ function checkUpdated(blog, error, info) {
 			return;
 		}
 
-		blog.blog.posts({
+		conn.posts({
 			"filter": "text",
 			"limit": Math.min(need, 20),
 		}, function (error, response) {

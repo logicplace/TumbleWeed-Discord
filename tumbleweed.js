@@ -1,3 +1,5 @@
+"use strict";
+
 // TumbleWeed Discord Tumblr bot
 // Copyright 2017 Sapphire Becker (logicplace.com)
 // MIT Licensed
@@ -18,12 +20,21 @@ function TumbleWeed() {
 	// load receivers
 	this.receivers = [];
 	for(var r of fs.readdirSync("./receivers")) {
-		this.receivers.push(new (require("./receivers/" + r))(this));
+		var receiver = new (require("./receivers/" + r))(this);
+		receiver.bot = this;
+		this.receivers.push(receiver);
 	}
 
 	setInterval(this.saveMemory.bind(this), 60 * 60 * 1000);
 
 	this.sender = new (require("./senders/" + Settings.sender + ".js"))(this);
+	this.sender.bot = this;
+}
+
+TumbleWeed.prototype.onInit = function() {
+	for (let receiver of this.receivers) {
+		receiver.onInit && receiver.onInit();
+	}
 }
 
 TumbleWeed.prototype.registrar = function(listener) {
@@ -71,13 +82,13 @@ TumbleWeed.prototype.command = function(event, input) {
 
 	// If we got here, no command matched, output error based on best.
 	if (best) {
-		this.sender.error(event.channel, [
-			"string", "Error in argument " + (best + 1) + ". See ",
+		this.sender.error(event.context, [
+			"string", "Error in argument " + best + ". See ",
 			"code", this.prefix + "help " + bestCommand.helpStr,
 			"string", " for details.",
 		]);
 	} else {
-		this.sender.error(event.channel, [
+		this.sender.error(event.context, [
 			"string", "Invalid command. See ",
 			"code", this.prefix + "help",
 			"string", " for details."
@@ -107,15 +118,18 @@ TumbleWeed.prototype.saveMemory = function(mod, sync) {
 	}
 
 	if (mod) {
-		(sync ? fs.writeFileSync : fs.writeFile)("./memory/" + mod + ".json", JSON.stringify(this.memory[mod]), (err) => {
+		var write = (sync ? fs.writeFileSync : fs.writeFile).bind(fs, "./memory/" + mod + ".json", JSON.stringify(this.memory[mod]));
+		if (sync) write();
+		else write((err) => {
 			if (err) {
 				console.error("Error writing memory for", mod, err);
 			}
 		});
 	} else {
-		for (var mod in self.memory) {
-			self.saveMemory(mod, sync);
+		for (var mod in this.memory) {
+			this.saveMemory(mod, sync);
 		}
+		console.log((new Date()).toString() + ": Saved memory.");
 	}
 }
 
@@ -200,7 +214,7 @@ Command.prototype.match = function(command, ev) {
 			// Quotable words cases
 			var tmp, case4 = arg[0] == 4, quotes = [];
 			while ((tmp = command.match(quotable)) || (tmp = command.match(singleWord))) {
-				command = command.substr(tmp.length);
+				command = command.substr(tmp[0].length);
 				quotes.push(tmp[1]);
 				if (case4) break;
 				command = command.replace(initialSpace, "");
@@ -209,7 +223,7 @@ Command.prototype.match = function(command, ev) {
 				if (params.length != 1) return i;
 				params.push(quotes[0]);
 			} else {
-				params.push(quotes);
+				params.push(quotes.length > 1 || quotes.length && quotes[0] ? quotes : []);
 			}
 		}
 
@@ -228,6 +242,19 @@ Command.prototype.match = function(command, ev) {
 
 // Main
 var TW = new TumbleWeed();
-process.on('exit', (code) => {
-	TW.saveMemory("sync");
-});
+
+// http://stackoverflow.com/a/14032965/734170
+function exitHandler(options, err) {
+	if (options.cleanup) TW.saveMemory("sync");
+	if (err) console.log(err.stack);
+	if (options.exit) process.exit();
+}
+
+//do something when app is closing
+process.on("exit", exitHandler.bind(null,{cleanup:true}));
+
+//catches ctrl+c event
+process.on("SIGINT", exitHandler.bind(null, {exit:true}));
+
+//catches uncaught exceptions
+process.on("uncaughtException", exitHandler.bind(null, {exit:true}));

@@ -11,8 +11,6 @@ function roleName(role) {
 }
 
 function DiscordBot(Bot) {
-	this.bot = Bot;
-
 	var memory = this.discord = Bot.loadMemory("discord", {
 		"guilds": {},
 	});
@@ -35,7 +33,8 @@ function DiscordBot(Bot) {
 		console.log("Connected to discord.");
 
 		// Check to see if custom roles exist
-		for (var guild of client.guilds) {
+		for (let guild of client.guilds) {
+			guild = guild[1];
 			if (!(guild.id in memory.guilds)) {
 				var guildmem = memory.guilds[guild.id] = {
 					"prefix": Bot.prefix,
@@ -50,9 +49,15 @@ function DiscordBot(Bot) {
 				.then(role => { guildmem.contentRole = role.id });	
 			}
 		}
+
+		Bot.onInit();
 	});
 
 	client.on("message", message => {
+		// Ignore bots
+		if (message.author.bot) return;
+
+		// Construct message event
 		var context = {
 			"guild": message.guild.id,
 			"channel": message.channel.id,
@@ -60,21 +65,26 @@ function DiscordBot(Bot) {
 
 		var mg = memory.guilds[context.guild];
 		var ev = this.makeEvent(context, mg);
+		ev.message = message;
+
 		ev.reply = {
 			"print": this.print.bind(this, context),
 			"warn": this.warn.bind(this, context),
 			"error": this.error.bind(this, context),
 		};
 		
+		var admin = message.member.roles.has(mg.adminRole);
+
 		ev.authority = {
-			"admin": mg.adminRole in message.member.roles,
-			"content": mg.contentRole in message.member.roles,
+			"admin": admin,
+			"content": admin || message.member.roles.has(mg.contentRole),
 		};
 
+		// Dispatch
 		Bot.command(ev, message.content)
 	});
 
-	Discord.login(Bot.settings.discord.token);
+	client.login(Bot.settings.discord.token);
 }
 
 DiscordBot.prototype.makeEvent = function(context, mg) {
@@ -90,7 +100,7 @@ DiscordBot.prototype.formatter = Base.formatter;
 
 DiscordBot.prototype.print = function(dest, msg, args) {
 	var output = this.formatter(this.makeEvent(dest), msg, args);
-	this.client.guilds[dest.guild].channels[dest.channel].send(output);
+	this.client.guilds.get(dest.guild).channels.get(dest.channel).sendMessage(output);
 }
 
 DiscordBot.prototype.warn = function(dest, msg, args) {
@@ -115,7 +125,7 @@ DiscordBot.prototype.nick = function(ev, nick) {
 		return;
 	}
 
-	this.client.user.setNickname(nick);
+	ev.message.guild.members.get(this.client.user.id).setNickname(nick);
 }
 
 DiscordBot.prototype.avatar = function(ev, avatar) {

@@ -3,6 +3,7 @@
 // MIT Licensed
 
 function replace(ev, msg, args) {
+	args = args || {};
 	return msg.replace(/\{(\w+)\}/g, function (m, word) {
 		if (word == "prefix") return ev.prefix;
 		else if (word in args) return args[word];
@@ -11,8 +12,8 @@ function replace(ev, msg, args) {
 }
 
 function localize(ev, msg, args) {
-	l1 = ev.localization;
-	var l2 = this.bot.localization;
+	l1 = ev.localization || {};
+	var l2 = this.bot.localization || {};
 
 	if (msg in l1) msg = l1[msg];
 	else if (msg in l2) msg = l2[msg];
@@ -23,7 +24,7 @@ function localize(ev, msg, args) {
 	
 	var out = "";
 	for (var i = 0; i < msg.length; i += 2) {
-		var fmt = msg[i], value = localize(ev, msg[i+1]);
+		var fmt = msg[i], value = localize.call(this, ev, msg[i+1]);
 		out += this.format(fmt, replace(ev, value, args));
 	}
 	return out;
@@ -33,7 +34,8 @@ module.exports = {
 	"formatter": localize,
 
 	"prependString": function (str, msg) {
-		if (typeof(msg) == "string") return str + msg;
-		else return ["string", str].concat(msg);
+		str = ["string", str];
+		if (typeof(msg) == "string") msg = ["string", msg];
+		return ["string", str].concat(msg);
 	},
 }

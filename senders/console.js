@@ -7,8 +7,6 @@ const readline = require('readline');
 const Base = require("./base.js");
 
 function ConsoleBot(Bot) {
-	this.bot = Bot;
-	
 	process.stdin.setEncoding("utf8");
 	const rl = readline.createInterface({
 		input: process.stdin,
@@ -42,18 +40,18 @@ function ConsoleBot(Bot) {
 
 ConsoleBot.prototype.formatter = Base.formatter;
 
-ConsoleBot.prototype.print = function(dest, msg) {
-	var output = this.formatter(this.event, msg);
+ConsoleBot.prototype.print = function(dest, msg, args) {
+	var output = this.formatter(this.event, msg, args);
 	console.log(output);
 };
 
-ConsoleBot.prototype.warn = function(dest, msg) {
-	var output = this.formatter(this.event, msg);
+ConsoleBot.prototype.warn = function(dest, msg, args) {
+	var output = this.formatter(this.event, msg, args);
 	console.warn(output);
 };
 
-ConsoleBot.prototype.error = function(dest, msg) {
-	var output = this.formatter(this.event, msg);
+ConsoleBot.prototype.error = function(dest, msg, args) {
+	var output = this.formatter(this.event, msg, args);
 	console.error(output);
 };
 
