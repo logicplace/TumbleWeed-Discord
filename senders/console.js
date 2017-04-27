@@ -25,6 +25,7 @@ function ConsoleBot(Bot) {
 
 	this.event = {
 		"prefix": Bot.prefix,
+		"context": "",
 		"localization": {},
 		"authority": {
 			"admin": true,
@@ -36,6 +37,8 @@ function ConsoleBot(Bot) {
 			"error": this.error.bind(this, {}),
 		}
 	}
+
+	Bot.onInit();
 }
 
 ConsoleBot.prototype.formatter = Base.formatter;
