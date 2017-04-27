@@ -39,8 +39,8 @@
 	"tumblr.update.error": "Error receiving blog info: {error}",
 	"tumblr.update.missed": [
 		"string", "I may have missed some posts from ",
-		"no-preview", "{url}",
-	]
+		"no-preview", "{url}"
+	],
 
 	"warn": "Warning: ",
 	"error": "Error: "
