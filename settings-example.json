@@ -4,9 +4,16 @@
 	"tumblr": {
 		"oauth": {
 			"consumer_key": "OAuth Consumer Key",
-			"consumer_secret": "OAuth Consumer Secret",
-			"token": "OAuth Access Token",
-			"token_secret": "OAuth Access Token Secret"
+			"consumer_secret": "OAuth Consumer Secret"
 		}
+	},
+	"twitter": {
+		"oauth": {
+			"consumer_key": "OAuth Consumer Key",
+			"consumer_secret": "OAuth Consumer Secret"
+		}
+	},
+	"discord": {
+		"token": "Bot token"
 	}
 }
