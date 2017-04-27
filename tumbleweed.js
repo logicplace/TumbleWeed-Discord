@@ -12,6 +12,7 @@ function TumbleWeed() {
 	this.prefix = Settings.prefix;
 	this.help = {}
 	this.commands = [];
+	this.memory = {};
 	this.localization = require("./enUS.json");
 
 	// load receivers
