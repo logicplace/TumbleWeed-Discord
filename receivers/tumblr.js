@@ -192,7 +192,7 @@ TumblrListener.prototype.list = function (ev, list) {
 				var blog = blogs[blogName];
 				var queries = [];
 				for (var query of blog.queries) {
-					if (deep_equal(query[0], ev.context)) queries.push(query);
+					if (query[0] == ev.context) queries.push(query);
 				}
 
 				switch (queries.length) {
@@ -277,10 +277,9 @@ function checkUpdated(blogName, error, info) {
 			if (posts[i].timestamp > updated) {
 				var sentTo = {};
 				for (var query of queries) {
-					var strq0 = JSON.stringify(query[0]);
-					if (!(strq0 in sentTo)) {
+					if (!(query[0] in sentTo)) {
 						self.bot.sender.print(query[0], "tumblr.update.missed", {"url": response.blog.url});
-						sentTo[strq0] = true;
+						sentTo[query[0]] = true;
 					}
 				}
 			}
@@ -295,9 +294,8 @@ function checkUpdated(blogName, error, info) {
 						var fail = false;
 
 						// Don't need to send the same post to a channel more than once.
-						var strq0 = JSON.stringify(query[0]);
-						if (strq0 in sentTo) continue;
-						sentTo[strq0] = true;
+						if (query[0] in sentTo) continue;
+						sentTo[query[0]] = true;
 
 						var ins = query[1], outs = query[2];
 

@@ -58,10 +58,7 @@ function DiscordBot(Bot) {
 		if (message.author.bot) return;
 
 		// Construct message event
-		var context = {
-			"guild": message.guild.id,
-			"channel": message.channel.id,
-		};
+		var context = message.guild.id + ":" + message.channel.id;
 
 		var mg = memory.guilds[context.guild];
 		var ev = this.makeEvent(context, mg);
@@ -99,8 +96,10 @@ DiscordBot.prototype.makeEvent = function(context, mg) {
 DiscordBot.prototype.formatter = Base.formatter;
 
 DiscordBot.prototype.print = function(dest, msg, args) {
+	dest = dest.split(":");
+
 	var output = this.formatter(this.makeEvent(dest), msg, args);
-	this.client.guilds.get(dest.guild).channels.get(dest.channel).sendMessage(output);
+	this.client.guilds.get(dest[0]).channels.get(dest[1]).sendMessage(output);
 }
 
 DiscordBot.prototype.warn = function(dest, msg, args) {
