@@ -11,8 +11,8 @@ function TwitterListener(Bot) {
 
 	// Register commands
 	var registrar = Bot.registrar(this);
-	registrar.command("twitter follow #(.+)#", this.follow);
-	registrar.command("twitter follow_original #(.+)#", this.followOriginal);
+	registrar.command("twitter follow #.+#", this.follow);
+	registrar.command("twitter follow_original #.+#", this.followOriginal);
 	registrar.command("follow #<?https?://twitter\\.com/search([?&]\\w+=[^&]+)*[?&]q=([^&]+)\\S*>?$#", this.followURL);
 	registrar.command("follow_original #<?https?://twitter\\.com/search([?&]\\w+=[^&]+)*[?&]q=([^&]+)\\S*>?$#", this.followOriginalURL);
 	registrar.command("twitter unfollow *", this.unfollow);
@@ -58,13 +58,17 @@ TwitterListener.prototype.follow = function (event, query, original) {
 		return;
 	}
 
-	var query = [
-		query,
-		0,
-		{}
-	];
+	// Filter images seems to be broken.
+	var filterImages = query[0].indexOf("filter:images"), opts;
+	if (filterImages != -1) {
+		query[0] = query[0].substr(0, filterImages) + query[0].substr(filterImages + 13);
+		opts.images = true;
+	}
 
-	if (original) query[2].original = true;
+	if (original) opts.original = true;
+
+	query = [query[0], 0, opts];
+
 
 	if (event.context in this.memory.queries) {
 		this.memory.queries[event.context].push(query);
@@ -76,7 +80,7 @@ TwitterListener.prototype.follow = function (event, query, original) {
 }
 
 TwitterListener.prototype.followURL = function (event, query, original) {
-	this.follow(event, decodeURIComponent(query[2]));
+	this.follow(event, [decodeURIComponent(query[2])], original);
 }
 
 TwitterListener.prototype.followOriginal = function (event, query) {
@@ -138,7 +142,6 @@ TwitterListener.prototype.runQueries = function () {
 			var opts = {
 				"q": query[0],
 				"result_type": "recent",
-				"include_entities": "false",
 			};
 
 			if (query[1]) opts.since_id = query[1].toString();
@@ -158,11 +161,21 @@ function sendUpdates(context, query, err, data, response) {
 
 	// Store the latest ID:
 	if (data.statuses.length) {
-		query[1] = data.statuses[0].id;
+		query[1] = parseInt(data.statuses[0].id_str);
 	} else return;
 
 	for (var i = data.statuses.length - 1; i >= 0; --i) {
 		var status = data.statuses[i];
+
+		if (opts.images) {
+			var ok = false;
+			if ("media" in status.entities) {
+				for (let media of status.entities.media) {
+					if (media.type == "photo") ok = true;
+				}
+			}
+			if (!ok) continue;
+		}
 
 		// Extra filters
 		if (opts.original && status.in_reply_to_user_id) continue;
