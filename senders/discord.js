@@ -18,13 +18,37 @@ function DiscordBot(Bot) {
 	// Register commands
 	var registrar = Bot.registrar(this);
 	registrar.command("nick _", this.nick);
-	registrar.command("avatar", this.avatar);
-	registrar.command("avatar _", this.avatar);
 	registrar.command("prefix _", this.prefix);
 
 	registrar.command("locale _", this.resetLocale);
 	registrar.command("locales", this.listLocales);
 	registrar.command("local _ ^_", this.setMessage);
+
+	// Help hooks
+	registrar.help("nick", {
+		"command": "nick NickName",
+		"help": "discord.help.cmd.nick",
+	});
+
+	registrar.help("prefix", {
+		"command": "prefix Prefix",
+		"help": "discord.help.cmd.prefix",
+	});
+
+	registrar.help("locale", {
+		"command": "locale LocaleName",
+		"help": "discord.help.cmd.locale",
+	});
+
+	registrar.help("locale", {
+		"command": "locales",
+		"help": "discord.help.cmd.locales",
+	});
+
+	registrar.help("local", {
+		"command": 'local MessageID "Message"',
+		"help": "discord.help.cmd.local",
+	});
 
 	// Make discord client
 	var client = this.client =  new Discord.Client();
@@ -125,14 +149,6 @@ DiscordBot.prototype.nick = function(ev, nick) {
 	}
 
 	ev.message.guild.members.get(this.client.user.id).setNickname(nick);
-}
-
-DiscordBot.prototype.avatar = function(ev, avatar) {
-	if (!ev.authority.admin) {
-		ev.reply.error("discord.cmd.avatar.no-permission");
-		return;
-	}
-	// TODO: change avatar by url and embed
 }
 
 DiscordBot.prototype.prefix = function(ev, prefix) {

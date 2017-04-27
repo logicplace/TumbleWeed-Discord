@@ -25,11 +25,15 @@ function TumblrListener(Bot) {
 		"Command": [
 			"follow", {
 				"command": "tumblr follow BlogName [Tags]",
-				"help": "Follow a blog, optionally limited to the given tags.",
+				"help": "tumblr.help.cmd.follow",
 			},
 			"unfollow", {
 				"command": "tumblr unfollow BlogName [Tags]",
-				"help": "Unfollow a blog, optionally only the tags given.",
+				"help": "tumblr.help.cmd.unfollow",
+			},
+			"list", {
+				"command": "tumblr list [BlogNames]",
+				"help": "tumblr.help.cmd.list"
 			}
 		],
 	});

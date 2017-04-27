@@ -1,4 +1,16 @@
 {
+	"discord.help.cmd.nick": "Specify my new NickName for this server.",
+	"discord.help.cmd.prefix": "Specify my command prefix for this server.",
+	"discord.help.cmd.locale": [
+		"string", "Reset my locale for this server. Form is like: enUS. Use ",
+		"code", "locales",
+		"string", " to list all the languages I know."
+	],
+	"discord.help.cmd.locales": "List all the languages I know.",
+	"discord.help.cmd.local": [
+		"string", "Set a custom response message for this server. You can see a list of IDs at: ",
+		"no-preview", "http://github.com/logicplace/TumbleWeed-Discord/blob/release/enUS.json"
+	],
 	"discord.cmd.nick.no-permission": "You do not have permission to change my name.",
 	"discord.cmd.avatar.no-permission": "You do not have permission to change my avatar.",
 	"discord.cmd.prefix.no-permission": "You do not have permission to change the command prefix.",
@@ -20,6 +32,10 @@
 	],
 	"discord.cmd.local.success": "Speech pattern changed.",
 
+	"tumblr.help": "Manage Tumblr stuff.",
+	"tumblr.help.cmd.follow": "Follow a blog, optionally limited to the given tags.",
+	"tumblr.help.cmd.unfollow": "Unfollow a blog, optionally only the tags given.",
+	"tumblr.help.cmd.list": "If not blog name is specified, list blogs this channel follows. Otherwise, list all tagsets followed by the specified blog.",
 	"tumblr.cmd.follow.no-permission": "You do not have permission to do that.",
 	"tumblr.cmd.follow.success": "I'm now following that.",
 	"tumblr.cmd.unfollow.no-permission": "You do not have permission to do that.",
@@ -42,6 +58,18 @@
 		"no-preview", "{url}"
 	],
 
+	"twitter.help": "Manage Twitter stuff.",
+	"twitter.help.cmd.follow": [
+		"string", "Follow a search query, See ",
+		"no-preview", "https://dev.twitter.com/rest/public/search#query-operators",
+		"string", " for details."
+	],
+	"twitter.help.cmd.unfollow": [
+		"string", "Unfollow a search query by index. See ",
+		"code", "{prefix}twitter list",
+		"string", " for indices."
+	],
+	"twitter.help.cmd.list": "List all active search queries on this channel with #.",
 	"twitter.cmd.follow.no-permission": "You do not have permission to do that.",
 	"twitter.cmd.follow.success": "I'm now following that.",
 	"twitter.cmd.unfollow.no-permission": "You do not have permission to do that.",

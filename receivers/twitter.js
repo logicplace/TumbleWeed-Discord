@@ -13,10 +13,34 @@ function TwitterListener(Bot) {
 	var registrar = Bot.registrar(this);
 	registrar.command("twitter follow #(.+)#", this.follow);
 	registrar.command("twitter follow_original #(.+)#", this.followOriginal);
-	registrar.command("follow #https?://twitter\\.com/search([?&]\\w+=[^&]+)*[?&]q=([^&]+)\\S*$#", this.followURL);
-	registrar.command("follow_original #https?://twitter\\.com/search([?&]\\w+=[^&]+)*[?&]q=([^&]+)\\S*$#", this.followOriginalURL);
+	registrar.command("follow #<?https?://twitter\\.com/search([?&]\\w+=[^&]+)*[?&]q=([^&]+)\\S*>?$#", this.followURL);
+	registrar.command("follow_original #<?https?://twitter\\.com/search([?&]\\w+=[^&]+)*[?&]q=([^&]+)\\S*>?$#", this.followOriginalURL);
 	registrar.command("twitter unfollow *", this.unfollow);
 	registrar.command("twitter list", this.list);
+
+	// Help hooks
+	registrar.help("twitter", {
+		"command": "twitter Command",
+		"help": "twitter.help",
+		"Command": [
+			"follow", {
+				"command": "twitter follow Search",
+				"help": "twitter.help.cmd.follow",
+			},
+			"unfollow", {
+				"command": "twitter unfollow Search#",
+				"help": "twitter.help.cmd.unfollow",
+			},
+			"list", {
+				"command": "twitter list",
+				"help": "twitter.help.cmd.list"
+			}
+		],
+	});
+
+	registrar.help("follow", {
+		"command": "follow TwitterSearchURL",
+	});
 
 	this.memory = Bot.loadMemory("twitter", {
 		// {context: [[query, latest status ID, extra search options], ...], ...}
