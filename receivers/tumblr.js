@@ -135,7 +135,7 @@ TumblrListener.prototype.unfollow = function (ev, blogName, tags) {
 
 	var tumblr = this.tumblr, remTagSets = parseTags(tags, ev.context);
 
-	if (tags) {
+	if (tags.length) {
 		// Remove tags only.
 		var blog = tumblr.blogs[blogName];
 		if (blog) {
