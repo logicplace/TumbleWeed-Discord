@@ -42,6 +42,15 @@
 		"no-preview", "{url}"
 	],
 
+	"twitter.cmd.follow.no-permission": "You do not have permission to do that.",
+	"twitter.cmd.follow.success": "I'm now following that.",
+	"twitter.cmd.unfollow.no-permission": "You do not have permission to do that.",
+	"twitter.cmd.unfollow.success": "I've stopped following that.",
+	"twitter.cmd.unfollow.empty": "There are no more twitter searches on this channel.",
+	"twitter.cmd.unfollow.none": "No twitter searches active on this channel.",
+	"twitter.cmd.list.header": "Twitter searches active on this channel:",
+	"twitter.cmd.list.none": "No twitter searches active on this channel.",
+
 	"warn": "Warning: ",
 	"error": "Error: "
 }
