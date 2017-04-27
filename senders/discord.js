@@ -109,8 +109,8 @@ function DiscordBot(Bot) {
 }
 
 DiscordBot.prototype.makeEvent = function(context, mg) {
-	context = context.split(":");
-	mg = mg || this.discord.guilds[context[0]];
+	var guild = context.split(":")[0];
+	mg = mg || this.discord.guilds[guild];
 	return {
 		"prefix": mg.prefix,
 		"localization": mg.localization,
@@ -121,10 +121,10 @@ DiscordBot.prototype.makeEvent = function(context, mg) {
 DiscordBot.prototype.formatter = Base.formatter;
 
 DiscordBot.prototype.print = function(dest, msg, args) {
-	dest = dest.split(":");
+	var splits = dest.split(":");
 
 	var output = this.formatter(this.makeEvent(dest), msg, args);
-	this.client.guilds.get(dest[0]).channels.get(dest[1]).sendMessage(output);
+	this.client.guilds.get(splits[0]).channels.get(splits[1]).sendMessage(output);
 }
 
 DiscordBot.prototype.warn = function(dest, msg, args) {
