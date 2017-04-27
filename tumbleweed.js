@@ -31,24 +31,24 @@ function TumbleWeed() {
 	this.sender.bot = this;
 }
 
-TumbleWeed.prototype.onInit = function() {
+TumbleWeed.prototype.onInit = function () {
 	for (let receiver of this.receivers) {
 		receiver.onInit && receiver.onInit();
 	}
 }
 
-TumbleWeed.prototype.registrar = function(listener) {
+TumbleWeed.prototype.registrar = function (listener) {
 	return {
 		"command": this.registerCommand.bind(this, listener),
 		"help": this.registerHelp.bind(this)
 	}
 }
 
-TumbleWeed.prototype.registerCommand = function(listener, form, handler) {
+TumbleWeed.prototype.registerCommand = function (listener, form, handler) {
 	this.commands.push(new Command(this, listener, form, handler));
 };
 
-TumbleWeed.prototype.registerHelp = function(command, help) {
+TumbleWeed.prototype.registerHelp = function (command, help) {
 	var helpObj;
 	if (command in this.help) {
 		helpObj = this.help[command];
@@ -60,7 +60,7 @@ TumbleWeed.prototype.registerHelp = function(command, help) {
 	helpObj.push(help);
 }
 
-TumbleWeed.prototype.command = function(event, input) {
+TumbleWeed.prototype.command = function (event, input) {
 	var prefix = event.prefix || this.prefix;
 	if (input.substr(0, prefix.length) == prefix) {
 		input = input.substr(prefix.length);
@@ -98,7 +98,7 @@ TumbleWeed.prototype.command = function(event, input) {
 	return false;
 };
 
-TumbleWeed.prototype.loadMemory = function(mod, empty) {
+TumbleWeed.prototype.loadMemory = function (mod, empty) {
 	var data;
 	try {
 		data = require("./memory/" + mod + ".json");
@@ -111,7 +111,7 @@ TumbleWeed.prototype.loadMemory = function(mod, empty) {
 	return data;
 }
 
-TumbleWeed.prototype.saveMemory = function(mod, sync) {
+TumbleWeed.prototype.saveMemory = function (mod, sync) {
 	var sync = sync || false;
 	if (mod == "sync") {
 		sync = true;
@@ -177,7 +177,7 @@ function Command(bot, listener, form, handler) {
 var initialSpace = /^\s+/;
 var singleWord = /^(\S+)/;
 var quotable = /^"((""|[^"]+)*)"/;
-Command.prototype.match = function(command, ev) {
+Command.prototype.match = function (command, ev) {
 	// Returns argument # this failed on or true for success.
 
 	var params = [];
