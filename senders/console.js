@@ -7,6 +7,8 @@ const readline = require('readline');
 const Base = require("./base.js");
 
 function ConsoleBot(Bot) {
+	this.bot = Bot;
+	
 	process.stdin.setEncoding("utf8");
 	const rl = readline.createInterface({
 		input: process.stdin,
@@ -19,13 +21,22 @@ function ConsoleBot(Bot) {
 	rl.on("line", (text) => {
 		text = text.trim();
 		if (text == "/exit") process.exit();
-		Bot.command({}, text);
+		Bot.command(this.event, text);
 		rl.prompt();
 	});
 
 	this.event = {
 		"prefix": Bot.prefix,
 		"localization": {},
+		"authority": {
+			"admin": true,
+			"content": true,
+		},
+		"reply": {
+			"print": this.print.bind(this, {}),
+			"warn": this.warn.bind(this, {}),
+			"error": this.error.bind(this, {}),
+		}
 	}
 }
 
