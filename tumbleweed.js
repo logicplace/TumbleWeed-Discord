@@ -61,8 +61,9 @@ TumbleWeed.prototype.registerHelp = function(command, help) {
 }
 
 TumbleWeed.prototype.command = function(event, input) {
-	if (input.substr(0, this.prefix.length) == this.prefix) {
-		input = input.substr(this.prefix.length);
+	var prefix = event.prefix || this.prefix;
+	if (input.substr(0, prefix.length) == prefix) {
+		input = input.substr(prefix.length);
 	}
 	else {
 		return false;
@@ -84,13 +85,13 @@ TumbleWeed.prototype.command = function(event, input) {
 	if (best) {
 		this.sender.error(event.context, [
 			"string", "Error in argument " + best + ". See ",
-			"code", this.prefix + "help " + bestCommand.helpStr,
+			"code", prefix + "help " + bestCommand.helpStr,
 			"string", " for details.",
 		]);
 	} else {
 		this.sender.error(event.context, [
 			"string", "Invalid command. See ",
-			"code", this.prefix + "help",
+			"code", prefix + "help",
 			"string", " for details."
 		]);
 	}
