@@ -84,7 +84,7 @@ function DiscordBot(Bot) {
 		// Construct message event
 		var context = message.guild.id + ":" + message.channel.id;
 
-		var mg = memory.guilds[context.guild];
+		var mg = memory.guilds[message.guild.id];
 		var ev = this.makeEvent(context, mg);
 		ev.message = message;
 
@@ -109,7 +109,8 @@ function DiscordBot(Bot) {
 }
 
 DiscordBot.prototype.makeEvent = function(context, mg) {
-	mg = mg || this.discord.guilds[context.guild];
+	context = context.split(":");
+	mg = mg || this.discord.guilds[context[0]];
 	return {
 		"prefix": mg.prefix,
 		"localization": mg.localization,
