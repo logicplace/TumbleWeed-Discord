@@ -7,7 +7,7 @@
 const fs = require("fs");
 const escapeRegExp = require("escape-string-regexp");
 
-const Settings = require("./settings.json");
+const Settings = require(process.argv[2] || "./settings.json");
 
 function TumbleWeed() {
 	this.settings = Settings;
