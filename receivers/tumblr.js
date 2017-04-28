@@ -22,20 +22,22 @@ function TumblrListener(Bot) {
 	registrar.help("tumblr", {
 		"command": "tumblr Command",
 		"help": "Manage Tumblr stuff.",
-		"Command": [
-			"follow", {
-				"command": "tumblr follow BlogName [Tags]",
-				"help": "tumblr.help.cmd.follow",
-			},
-			"unfollow", {
-				"command": "tumblr unfollow BlogName [Tags]",
-				"help": "tumblr.help.cmd.unfollow",
-			},
-			"list", {
-				"command": "tumblr list [BlogNames]",
-				"help": "tumblr.help.cmd.list"
-			}
-		],
+		"args": [
+			"Command", [
+				"follow", {
+					"command": "tumblr follow BlogName [Tags]",
+					"help": "tumblr.help.cmd.follow",
+				},
+				"unfollow", {
+					"command": "tumblr unfollow BlogName [Tags]",
+					"help": "tumblr.help.cmd.unfollow",
+				},
+				"list", {
+					"command": "tumblr list [BlogNames]",
+					"help": "tumblr.help.cmd.list"
+				}
+			],
+		]
 	});
 
 	registrar.help("follow", {

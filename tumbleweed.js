@@ -17,6 +17,10 @@ function TumbleWeed() {
 	this.memory = {};
 	this.localization = require("./enUS.json");
 
+	// Register help command
+	var registrar = this.registrar(this);
+	registrar.command("help *", this.helpcmd);
+
 	// load receivers
 	this.receivers = [];
 	for(var r of fs.readdirSync("./receivers")) {
@@ -49,6 +53,19 @@ TumbleWeed.prototype.registerCommand = function (listener, form, handler) {
 };
 
 TumbleWeed.prototype.registerHelp = function (command, help) {
+	// help = {
+	//     "command": "Usage structure",
+	//     "help": "Help string",
+	//     "args": [
+	//         "Named argument 1", [
+	//             "Option 1": { ... },
+	//             ...
+	//         ],
+	//         ...
+	//     ]
+	// }
+
+	// Store basic form.
 	var helpObj;
 	if (command in this.help) {
 		helpObj = this.help[command];
@@ -56,8 +73,80 @@ TumbleWeed.prototype.registerHelp = function (command, help) {
 		helpObj = this.help[command] = [];
 	}
 
-	// TODO: normalize
-	helpObj.push(help);
+	var output = [
+		"code", [
+			"string", "{prefix}",
+			"string", help.command
+		],
+	];
+
+	if (help.help) {
+		output.push.apply(output, [
+			"string", "\n",
+			"string", help.help
+		]);
+	}
+
+	if (help.args) {
+		// Collect all arguments into form:
+		//  Argument: Possible values...
+		for (var i=0; i < help.args.length; i += 2) {
+			var argbody = help.args[i+1], argvalues = [];
+			for (var j=0; j < argbody.length; j += 2) {
+				argvalues.push(argbody[j]);
+
+				// Also, store help for this argument combination.
+				this.registerHelp(help.command.replace(help.args[i], argbody[j]), argbody[j+1])
+			}
+			output.push.apply(output, [
+				"string", "\n",
+				"string", help.args[i],
+				"string", "tumbleweed.cmd.help.arg-may-be",
+				"string", argvalues.join(", ")
+			]);
+		}
+	}
+
+	helpObj.push(output);
+}
+
+TumbleWeed.prototype.helpcmd = function (event, command) {
+	if (command.length) {
+		for (var i = command.length; i > 0; --i) {
+			var cmdstr = command.slice(0, i).join(" ");
+			if (cmdstr in this.help) {
+				if (i == command.length) {
+					// Command as given was found.
+					for (let cmd of this.help[cmdstr]) {
+						event.reply.print(cmd);
+					}
+				} else {
+					// A partial match was found, which means this (i) part is wrong.
+					event.reply.print("tumbleweed.cmd.help.no-arg", {
+						"cmd": cmdstr,
+						"arg": command[i]
+					});
+				}
+				return;
+			}
+		}
+		// No such command was found.
+		event.reply.print("tumbleweed.cmd.help.no-cmd", {
+			"cmd": command[0]
+		});
+	} else {
+		// Print a list of available commands.
+		var commands = [];
+		for (let k in this.help) {
+			// We only want to list base commands.
+			if (k.indexOf(" ") == -1) commands.push(k);
+		}
+
+		event.reply.print([
+			"string", "tumbleweed.cmd.help.list-cmds",
+			"string", commands.join(", ")
+		]);
+	}
 }
 
 TumbleWeed.prototype.command = function (event, input) {
@@ -258,4 +347,4 @@ process.on("exit", exitHandler.bind(null,{cleanup:true}));
 process.on("SIGINT", exitHandler.bind(null, {exit:true}));
 
 //catches uncaught exceptions
-process.on("uncaughtException", exitHandler.bind(null, {exit:true}));
+process.on("uncaughtException", exitHandler.bind(null, {}));

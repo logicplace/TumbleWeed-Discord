@@ -1,4 +1,9 @@
 {
+	"tumbleweed.cmd.help.list-cmds": "Available commands: ",
+	"tumbleweed.cmd.help.no-cmd": "Command {cmd} is not known.",
+	"tumbleweed.cmd.help.no-arg": "Command {cmd} has no argument {arg}.",
+	"tumbleweed.cmd.help.arg-may-be": " may be: ",
+
 	"discord.help.cmd.nick": "Specify my new NickName for this server.",
 	"discord.help.cmd.prefix": "Specify my command prefix for this server.",
 	"discord.help.cmd.locale": [

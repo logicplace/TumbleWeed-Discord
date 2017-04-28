@@ -22,20 +22,22 @@ function TwitterListener(Bot) {
 	registrar.help("twitter", {
 		"command": "twitter Command",
 		"help": "twitter.help",
-		"Command": [
-			"follow", {
-				"command": "twitter follow Search",
-				"help": "twitter.help.cmd.follow",
-			},
-			"unfollow", {
-				"command": "twitter unfollow Search#",
-				"help": "twitter.help.cmd.unfollow",
-			},
-			"list", {
-				"command": "twitter list",
-				"help": "twitter.help.cmd.list"
-			}
-		],
+		"args": [
+			"Command", [
+				"follow", {
+					"command": "twitter follow Search",
+					"help": "twitter.help.cmd.follow",
+				},
+				"unfollow", {
+					"command": "twitter unfollow Search#",
+					"help": "twitter.help.cmd.unfollow",
+				},
+				"list", {
+					"command": "twitter list",
+					"help": "twitter.help.cmd.list"
+				}
+			],
+		]
 	});
 
 	registrar.help("follow", {
