@@ -4,3 +4,4 @@ settings-public.json
 settings-private.json
 memory
 deploy.sh
+release
