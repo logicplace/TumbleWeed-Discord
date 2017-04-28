@@ -53,10 +53,10 @@ function DiscordBot(Bot) {
 	// Make discord client
 	var client = this.client =  new Discord.Client();
 
+	var self = this;
+
 	client.on("ready", () => {
 		console.log("Connected to discord.");
-
-		var self = this;
 
 		// Statup stuff with guilds
 		var guildNames = [];
@@ -107,8 +107,8 @@ function DiscordBot(Bot) {
 				}
 			} else {
 				// Assign roles to users.
-				this.assignRoles(guild.id, Bot.settings.discord.admin, memory.guilds[guild.id].adminRole);
-				this.assignRoles(guild.id, Bot.settings.discord.content, memory.guilds[guild.id].contentRole);
+				self.assignRoles(guild.id, Bot.settings.discord.admin, memory.guilds[guild.id].adminRole);
+				self.assignRoles(guild.id, Bot.settings.discord.content, memory.guilds[guild.id].contentRole);
 			}
 		}
 		console.log("I am in guilds:", guildNames.join(", "));
@@ -164,7 +164,7 @@ DiscordBot.prototype.assignRoles = function (guildID, users, roleID) {
 		console.log("Tried to assign roles for a guild I'm no longer in: " + guildID);
 		return;
 	}
-	
+
 	for (let member of this.client.guilds[guildID].members) {
 		member = member[1];
 		if (users.indexOf(member.user.username) != -1 || users.indexOf(member.user.id) != -1) {
