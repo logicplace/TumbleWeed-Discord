@@ -24,7 +24,7 @@ function localize(ev, msg, args) {
 	
 	var out = "";
 	for (var i = 0; i < msg.length; i += 2) {
-		var fmt = msg[i], value = localize.call(this, ev, msg[i+1]);
+		var fmt = msg[i], value = localize.call(this, ev, msg[i+1], args);
 		out += this.format(fmt, replace(ev, value, args));
 	}
 	return out;
