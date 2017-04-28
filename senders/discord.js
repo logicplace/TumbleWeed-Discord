@@ -160,6 +160,11 @@ DiscordBot.prototype.makeEvent = function(context, mg) {
 DiscordBot.prototype.assignRoles = function (guildID, users, roleID) {
 	if (!users || !users.length) return;
 
+	if (!(guildID in this.client.guilds)) {
+		console.log("Tried to assign roles for a guild I'm no longer in: " + guildID);
+		return;
+	}
+	
 	for (let member of this.client.guilds[guildID].members) {
 		member = member[1];
 		if (users.indexOf(member.user.username) != -1 || users.indexOf(member.user.id) != -1) {
