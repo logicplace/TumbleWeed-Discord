@@ -88,7 +88,7 @@ function DiscordBot(Bot) {
 					guildmem[attr] = role.id;
 
 					// Assign roles to users.
-					self.assignRoles(guild.id, Bot.settings.discord[attr.replace("Role", "")], role.id);
+					self.assignRoles(guild, Bot.settings.discord[attr.replace("Role", "")], role.id);
 				}
 
 				function couldNotAddRole(err) {
@@ -107,8 +107,8 @@ function DiscordBot(Bot) {
 				}
 			} else {
 				// Assign roles to users.
-				self.assignRoles(guild.id, Bot.settings.discord.admin, memory.guilds[guild.id].adminRole);
-				self.assignRoles(guild.id, Bot.settings.discord.content, memory.guilds[guild.id].contentRole);
+				self.assignRoles(guild, Bot.settings.discord.admin, memory.guilds[guild.id].adminRole);
+				self.assignRoles(guild, Bot.settings.discord.content, memory.guilds[guild.id].contentRole);
 			}
 		}
 		console.log("I am in guilds:", guildNames.join(", "));
@@ -157,15 +157,10 @@ DiscordBot.prototype.makeEvent = function(context, mg) {
 	}
 }
 
-DiscordBot.prototype.assignRoles = function (guildID, users, roleID) {
+DiscordBot.prototype.assignRoles = function (guild, users, roleID) {
 	if (!users || !users.length) return;
 
-	if (!(guildID in this.client.guilds)) {
-		console.log("Tried to assign roles for a guild I'm no longer in: " + guildID);
-		return;
-	}
-
-	for (let member of this.client.guilds[guildID].members) {
+	for (let member of guild.members) {
 		member = member[1];
 		if (users.indexOf(member.user.username) != -1 || users.indexOf(member.user.id) != -1) {
 			member.addRole(roleID);
