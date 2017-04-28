@@ -10,6 +10,8 @@ It currently supports Tumblr and Twitter.
 
 When it joins your server for the first time it will create two new roles: TumbleWeed Admin and TumbleWeed Content Provider. You may rename these if you want.
 
+The bot will check for updates every 10 minutes and saves its data every hour (also when you close it).
+
 ### Unrestricted commands ###
 
 * tw!tumblr list - List all Tumblr blogs the bot is following for this channel.
