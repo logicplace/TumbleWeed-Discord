@@ -14,6 +14,7 @@ The bot will check for updates every 10 minutes and saves its data every hour (a
 
 ### Unrestricted commands ###
 
+* tw!help [Command] - Help info!
 * tw!tumblr list - List all Tumblr blogs the bot is following for this channel.
 * tw!tumblr list BlogName - List all tagsets the bot is following on this blog for this channel.
 * tw!twitter list - List all Twitter searches the bot is following on this channel.
