@@ -163,7 +163,6 @@ function sendUpdates(context, query, err, data, response) {
 
 	// Store the latest ID:
 	if (data.statuses.length) {
-		console.log(data.statuses[0].id_str);
 		query[1] = data.statuses[0].id_str;
 	} else return;
 
