@@ -126,7 +126,7 @@ TwitterListener.prototype.unfollow = function (event, indexes) {
 TwitterListener.prototype.list = function (event) {
 	var idx = 1, msg = "";
 	for (let query of this.memory.queries[event.context]) {
-		msg += "\n* #" + idx.toString() + ": " + query[0];
+		msg += "\n* #" + idx.toString() + ": " + query[0] + (query[2].images ? " filter:images" : "");
 		++idx;
 	}
 
@@ -146,7 +146,7 @@ TwitterListener.prototype.runQueries = function () {
 				"result_type": "recent",
 			};
 
-			if (query[1]) opts.since_id = query[1].toString();
+			if (query[1]) opts.since_id = query[1];
 			else opts.count = 1;
 
 			this.conn.get("search/tweets", opts, sendUpdates.bind(this, context, query));
@@ -163,12 +163,14 @@ function sendUpdates(context, query, err, data, response) {
 
 	// Store the latest ID:
 	if (data.statuses.length) {
-		query[1] = parseInt(data.statuses[0].id_str);
+		console.log(data.statuses[0].id_str);
+		query[1] = data.statuses[0].id_str;
 	} else return;
 
 	for (var i = data.statuses.length - 1; i >= 0; --i) {
 		var status = data.statuses[i];
 
+		// filter:images workaround
 		if (opts.images) {
 			var ok = false;
 			if ("media" in status.entities) {
