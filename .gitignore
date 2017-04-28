@@ -1,3 +1,6 @@
 node_modules
 settings.json
+settings-public.json
+settings-private.json
 memory
+deploy.sh
