@@ -56,9 +56,13 @@ function DiscordBot(Bot) {
 	client.on("ready", () => {
 		console.log("Connected to discord.");
 
-		// Check to see if custom roles exist
+		var self = this;
+
+		// Statup stuff with guilds
+		var guildNames = [];
 		for (let guild of client.guilds) {
 			guild = guild[1];
+			guildNames.push(guild.name);
 			if (!(guild.id in memory.guilds)) {
 				var guildmem = memory.guilds[guild.id] = {
 					"prefix": Bot.prefix,
@@ -66,13 +70,48 @@ function DiscordBot(Bot) {
 					"contentRole": null,
 					"localization": {}
 				};
+
+				// Check to see if roles exist (frankly if they do there was likely a problem.)
+				var rolesFound = [false, false];
+				for (let role of guild.roles) {
+					role = role[1];
+					if (role.name == "TumbleWeed Admin") {
+						rolesFound[0] = true;
+						guildmem.adminRole = role.id
+					} else if (role.name == "TumbleWeed Content Provider") {
+						rolesFound[1] = true;
+						guildmem.contentRole = role.id
+					}
+				}
 				// Add new roles. The names etc can be changed.
-				guild.createRole({"name": "TumbleWeed Admin"})
-				.then(role => { guildmem.adminRole = role.id });
-				guild.createRole({"name": "TumbleWeed Content Provider"})
-				.then(role => { guildmem.contentRole = role.id });	
+				function addedRole(attr, role) {
+					guildmem[attr] = role.id;
+
+					// Assign roles to users.
+					self.assignRoles(guild.id, Bot.settings.discord[attr.replace("Role", "")], role.id);
+				}
+
+				function couldNotAddRole(err) {
+					console.log("Could not add roles to " + guild.name + " using members specified in settings exclusively.");
+				}
+
+				if (!rolesFound[0]) {
+					guild.createRole({"name": "TumbleWeed Admin"})
+					.then(addedRole.bind("adminRole"))
+					.catch(couldNotAddRole);
+				}
+				if (!rolesFound[1]) {
+					guild.createRole({"name": "TumbleWeed Content Provider"})
+					.then(addedRole.bind("contentRole"))
+					.catch(couldNotAddRole);
+				}
+			} else {
+				// Assign roles to users.
+				this.assignRoles(guild.id, Bot.settings.discord.admin, memory.guilds[guild.id].adminRole);
+				this.assignRoles(guild.id, Bot.settings.discord.content, memory.guilds[guild.id].contentRole);
 			}
 		}
+		console.log("I am in guilds:", guildNames.join(", "));
 
 		Bot.onInit();
 	});
@@ -94,11 +133,11 @@ function DiscordBot(Bot) {
 			"error": this.error.bind(this, context),
 		};
 		
-		var admin = message.member.roles.has(mg.adminRole);
+		var admin = self.memberAuth(message.member, mg.adminRole, "admin");
 
 		ev.authority = {
 			"admin": admin,
-			"content": admin || message.member.roles.has(mg.contentRole),
+			"content": admin || self.memberAuth(message.member, mg.contentRole, "content"),
 		};
 
 		// Dispatch
@@ -116,6 +155,22 @@ DiscordBot.prototype.makeEvent = function(context, mg) {
 		"localization": mg.localization,
 		"context": context
 	}
+}
+
+DiscordBot.prototype.assignRoles = function (guildID, users, roleID) {
+	if (!users || !users.length) return;
+
+	for (let member of this.client.guilds[guildID].members) {
+		member = member[1];
+		if (users.indexOf(member.user.username) != -1 || users.indexOf(member.user.id) != -1) {
+			member.addRole(roleID);
+		}
+	}
+}
+
+DiscordBot.prototype.memberAuth = function (member, role, level) {
+	var setting = this.bot.settings.discord[level] || [];
+	return member.roles.has(role) || setting.indexOf(member.user.username) != -1 || setting.indexOf(member.user.id) != -1;
 }
 
 DiscordBot.prototype.formatter = Base.formatter;

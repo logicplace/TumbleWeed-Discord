@@ -14,6 +14,8 @@
 		}
 	},
 	"discord": {
+		"admin": [],
+		"content": [],
 		"token": "Bot token"
 	}
 }
