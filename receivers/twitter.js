@@ -61,7 +61,7 @@ TwitterListener.prototype.follow = function (event, query, original) {
 	}
 
 	// Filter images seems to be broken.
-	var filterImages = query[0].indexOf("filter:images"), opts;
+	var filterImages = query[0].indexOf("filter:images"), opts = {};
 	if (filterImages != -1) {
 		query[0] = query[0].substr(0, filterImages) + query[0].substr(filterImages + 13);
 		opts.images = true;
