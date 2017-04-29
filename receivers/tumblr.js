@@ -116,7 +116,11 @@ TumblrListener.prototype.follow = function (ev, blogName, tags) {
 	}
 
 	// Add queries to the blog.
-	Array.prototype.push.apply(tumblr.blogs[blogName].queries, newTagSets);
+	if (newTagSets.length) {
+		Array.prototype.push.apply(tumblr.blogs[blogName].queries, newTagSets);
+	} else {
+		tumblr.blogs[blogName].queries.push([ev.context, [], []]);
+	}
 	ev.reply.print("tumblr.cmd.follow.success");
 }
 
