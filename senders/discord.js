@@ -169,6 +169,7 @@ DiscordBot.prototype.assignRoles = function (guild, users, roleID) {
 }
 
 DiscordBot.prototype.memberAuth = function (member, role, level) {
+	if (!member) return false;
 	var setting = this.bot.settings.discord[level] || [];
 	return member.roles.has(role) || setting.indexOf(member.user.username) != -1 || setting.indexOf(member.user.id) != -1;
 }
