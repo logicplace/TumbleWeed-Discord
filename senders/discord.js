@@ -3,6 +3,7 @@
 // MIT Licensed
 
 const Discord = require("discord.js");
+const Permissions = require("discord.js/src/util/Constants").PermissionFlags;
 
 const Base = require("./base.js");
 
@@ -92,7 +93,7 @@ function DiscordBot(Bot) {
 				}
 
 				function couldNotAddRole(err) {
-					console.log("Could not add roles to " + guild.name + " using members specified in settings exclusively.");
+					console.log("Could not add roles to " + guild.name + ". Using members specified in settings exclusively.");
 				}
 
 				if (!rolesFound[0]) {
@@ -170,8 +171,18 @@ DiscordBot.prototype.assignRoles = function (guild, users, roleID) {
 
 DiscordBot.prototype.memberAuth = function (member, role, level) {
 	if (!member) return false;
-	var setting = this.bot.settings.discord[level] || [];
-	return member.roles.has(role) || setting.indexOf(member.user.username) != -1 || setting.indexOf(member.user.id) != -1;
+	var setting = this.bot.settings.discord[level] || [], perm = false;
+	if (role == false) {
+		switch (level){
+		case "admin":
+			perm = member.hasPermission(Permissions.ADMINISTRATOR, false, false, true);
+			break;
+		case "content":
+			perm = member.hasPermission([Permissions.MANAGE_MESSAGES, Permissions.EMBED_LINKS]);
+			break;
+		}
+	}
+	return member.roles.has(role) || perm || setting.indexOf(member.user.username) != -1 || setting.indexOf(member.user.id) != -1;
 }
 
 DiscordBot.prototype.formatter = Base.formatter;

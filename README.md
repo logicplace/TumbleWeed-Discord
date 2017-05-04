@@ -59,6 +59,11 @@ Since searches are complex, I didn't provide a URL version of unfollow for it. H
 
 You can use [this link](https://discordapp.com/oauth2/authorize?client_id=306492836461936640&scope=bot&permissions=335547392) to invite it.
 
+It will try to create custom roles for permissions. If denied, then it will go off of user permissions:
+
+* TumbleWeed Administrator: Guild owner or Administrator permission
+* TumbleWeed Content Provider: Embed Links and Manage Messages
+
 However, if you want a custom avatar or want to avoid rate limiting (on the social media sites) you'll need to run your own.
 
 ## How to run your own ##
