@@ -63,7 +63,7 @@ function DiscordBot(Bot) {
 		var guildNames = [];
 		for (let guild of client.guilds) {
 			guild = guild[1];
-			guildNames.push(guild.name);
+			guildNames.push(guild.name + "(" + guild.id + ")");
 			
 			this.newGuild(guild);
 		}
@@ -138,17 +138,17 @@ DiscordBot.prototype.newGuild = function (guild) {
 		}
 
 		function couldNotAddRole(err) {
-			console.log("Could not add roles to " + guild.name + ". Using members specified in settings exclusively.");
+			console.log("Could not add roles to " + guild.name + ". Using members specified in settings exclusively. Error:", err);
 		}
 
 		if (!rolesFound[0]) {
 			guild.createRole({"name": "TumbleWeed Admin"})
-			.then(addedRole.bind("adminRole"))
+			.then(addedRole.bind(null, "adminRole"))
 			.catch(couldNotAddRole);
 		}
 		if (!rolesFound[1]) {
 			guild.createRole({"name": "TumbleWeed Content Provider"})
-			.then(addedRole.bind("contentRole"))
+			.then(addedRole.bind(null, "contentRole"))
 			.catch(couldNotAddRole);
 		}
 	} else {
