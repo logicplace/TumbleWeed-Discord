@@ -134,7 +134,7 @@ DiscordBot.prototype.newGuild = function (guild) {
 			guildmem[attr] = role.id;
 
 			// Assign roles to users.
-			self.assignRoles(guild, this.bot.settings.discord[attr.replace("Role", "")], role.id);
+			self.assignRoles(guild, self.bot.settings.discord[attr.replace("Role", "")], role.id);
 		}
 
 		function couldNotAddRole(err) {
