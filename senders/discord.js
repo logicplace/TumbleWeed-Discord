@@ -107,53 +107,53 @@ function DiscordBot(Bot) {
 
 DiscordBot.prototype.newGuild = function (guild) {
 	var memory = this.discord;
-	
-	if (!(guild.id in memory.guilds)) {
-		var guildmem = memory.guilds[guild.id] = {
+
+	var guildmem;
+	if (guild.id in memory.guilds) {
+		guildmem = memory.guilds[guild.id];
+	} else {
+		guildmem = memory.guilds[guild.id] = {
 			"prefix": this.bot.prefix,
 			"adminRole": null,
 			"contentRole": null,
 			"localization": {}
 		};
+	}
 
-		// Check to see if roles exist (frankly if they do there was likely a problem.)
-		var rolesFound = [false, false];
-		for (let role of guild.roles) {
-			role = role[1];
-			if (role.name == "TumbleWeed Admin") {
-				rolesFound[0] = true;
-				guildmem.adminRole = role.id
-			} else if (role.name == "TumbleWeed Content Provider") {
-				rolesFound[1] = true;
-				guildmem.contentRole = role.id
-			}
+	// Check to see if roles exist (frankly if they do there was likely a problem.)
+	var rolesFound = [false, false];
+	for (let role of guild.roles) {
+		role = role[1];
+		if (role.id === guildmem.adminRole || role.name == "TumbleWeed Admin") {
+			rolesFound[0] = true;
+			guildmem.adminRole = role.id
+		} else if (role.id === guildmem.contentRole || role.name == "TumbleWeed Content Provider") {
+			rolesFound[1] = true;
+			guildmem.contentRole = role.id
 		}
-		// Add new roles. The names etc can be changed.
-		function addedRole(attr, role) {
-			guildmem[attr] = role.id;
+	}
+	// Add new roles. The names etc can be changed.
+	function addedRole(attr, role) {
+		guildmem[attr] = role.id;
 
-			// Assign roles to users.
-			this.assignRoles(guild, this.bot.settings.discord[attr.replace("Role", "")], role.id);
-		}
-
-		function couldNotAddRole(err) {
-			console.log("Could not add roles to " + guild.name + ". Using members specified in settings exclusively. Error:", err.response.error.status, err.response.error.text);
-		}
-
-		if (!rolesFound[0]) {
-			guild.createRole({"name": "TumbleWeed Admin"})
-			.then(addedRole.bind(this, "adminRole"))
-			.catch(couldNotAddRole);
-		}
-		if (!rolesFound[1]) {
-			guild.createRole({"name": "TumbleWeed Content Provider"})
-			.then(addedRole.bind(this, "contentRole"))
-			.catch(couldNotAddRole);
-		}
-	} else {
 		// Assign roles to users.
-		this.assignRoles(guild, this.bot.settings.discord.admin, memory.guilds[guild.id].adminRole);
-		this.assignRoles(guild, this.bot.settings.discord.content, memory.guilds[guild.id].contentRole);
+		this.assignRoles(guild, this.bot.settings.discord[attr.replace("Role", "")], role.id);
+	}
+
+	function couldNotAddRole(roleName, err) {
+		guildmem[roleName] = null;
+		console.log("Could not add roles to " + guild.name + ". Using members specified in settings exclusively. Error:", err.response.error.status, err.response.error.text);
+	}
+
+	if (!rolesFound[0]) {
+		guild.createRole({"name": "TumbleWeed Admin"})
+		.then(addedRole.bind(this, "adminRole"))
+		.catch(couldNotAddRole.bind(this, "adminRole"));
+	}
+	if (!rolesFound[1]) {
+		guild.createRole({"name": "TumbleWeed Content Provider"})
+		.then(addedRole.bind(this, "contentRole"))
+		.catch(couldNotAddRole.bind(this, "contentRole"));
 	}
 }
 
@@ -185,7 +185,7 @@ DiscordBot.prototype.assignRoles = function (guild, users, roleID) {
 DiscordBot.prototype.memberAuth = function (member, role, level) {
 	if (!member) return false;
 	var setting = this.bot.settings.discord[level] || [], perm = false;
-	if (role == false) {
+	if (!role) {
 		switch (level){
 		case "admin":
 			perm = member.hasPermission(Permissions.ADMINISTRATOR, false, false, true);
@@ -238,8 +238,9 @@ DiscordBot.prototype.prefix = function(ev, prefix) {
 		return;
 	}
 
-	this.discord[ev.context.guild].prefix = prefix;
-	ev.reply.error("discord.cmd.prefix.success");
+	var guildID = ev.context.split(":")[0];
+	this.discord.guilds[guildID].prefix = prefix;
+	ev.reply.print("discord.cmd.prefix.success");
 }
 
 DiscordBot.prototype.resetLocale = function(ev, locale) {
