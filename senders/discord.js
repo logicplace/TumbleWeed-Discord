@@ -152,8 +152,8 @@ DiscordBot.prototype.newGuild = function (guild) {
 		}
 	} else {
 		// Assign roles to users.
-		self.assignRoles(guild, this.bot.settings.discord.admin, memory.guilds[guild.id].adminRole);
-		self.assignRoles(guild, this.bot.settings.discord.content, memory.guilds[guild.id].contentRole);
+		this.assignRoles(guild, this.bot.settings.discord.admin, memory.guilds[guild.id].adminRole);
+		this.assignRoles(guild, this.bot.settings.discord.content, memory.guilds[guild.id].contentRole);
 	}
 }
 
