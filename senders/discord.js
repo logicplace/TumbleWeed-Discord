@@ -191,7 +191,7 @@ DiscordBot.prototype.memberAuth = function (member, role, level) {
 			perm = member.hasPermission(Permissions.ADMINISTRATOR, false, false, true);
 			break;
 		case "content":
-			perm = member.hasPermission([Permissions.MANAGE_MESSAGES, Permissions.EMBED_LINKS]);
+			perm = member.hasPermission(Permissions.MANAGE_MESSAGES | Permissions.EMBED_LINKS);
 			break;
 		}
 	}
