@@ -204,7 +204,17 @@ DiscordBot.prototype.print = function(dest, msg, args) {
 	var splits = dest.split(":");
 
 	var output = this.formatter(this.makeEvent(dest), msg, args);
-	this.client.guilds.get(splits[0]).channels.get(splits[1]).sendMessage(output);
+	var guild = this.client.guilds.get(splits[0]);
+	if (guild) {
+		var channel = guild.channels.get(splits[1]);
+		if (channel) {
+			channel.sendMessage(output);
+		} else {
+			// TODO: if channel doesn't exist
+		}
+	} else {
+		// TODO: if guild doesn't exist
+	}
 }
 
 DiscordBot.prototype.warn = function(dest, msg, args) {
