@@ -233,7 +233,10 @@ TumblrListener.prototype.list = function (ev, list) {
 	} else {
 		var names = [];
 		for (var blogName in blogs) {
-			names.push(blogName);
+			var blog = blogs[blogName];
+			for (var query of blog.queries) {
+				if (query[0] == ev.context) names.push(blogName);
+			}
 		}
 		if (names.length) {
 			ev.reply.print([
