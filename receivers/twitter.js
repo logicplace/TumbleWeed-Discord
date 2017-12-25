@@ -125,9 +125,11 @@ TwitterListener.prototype.unfollow = function (event, indexes) {
 
 TwitterListener.prototype.list = function (event) {
 	var idx = 1, msg = "";
-	for (let query of this.memory.queries[event.context]) {
-		msg += "\n* #" + idx.toString() + ": " + query[0] + (query[2].images ? " filter:images" : "");
-		++idx;
+	if (event.context in this.memory.queries) {
+		for (let query of this.memory.queries[event.context]) {
+			msg += "\n* #" + idx.toString() + ": " + query[0] + (query[2].images ? " filter:images" : "");
+			++idx;
+		}
 	}
 
 	if (idx == 1) event.reply.print("twitter.cmd.list.none");
