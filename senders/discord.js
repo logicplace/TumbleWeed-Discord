@@ -76,7 +76,7 @@ function DiscordBot(Bot) {
 
 	client.on("message", message => {
 		// Ignore bots
-		if (message.author.bot) return;
+		if (message.author.bot || !message.guild) return;
 
 		// Construct message event
 		var context = message.guild.id + ":" + message.channel.id;
