@@ -1,5 +1,7 @@
 # TumbleWeed #
 
+NOTE (2019-03-19): This bot is trash and is causing me problems. I'm not going to put it back up until I remake it better, which may be never. Feel free to self-host, though.
+
 It's a Discord bot that tells you the latest from social media!
 
 Have it follow certain people or whatever and share the link in a channel of your choice.
@@ -57,7 +59,9 @@ Since searches are complex, I didn't provide a URL version of unfollow for it. H
 
 ## Invite to your server ##
 
-You can use [this link](https://discordapp.com/oauth2/authorize?client_id=306492836461936640&scope=bot&permissions=335547392) to invite it.
+~~You can use [this link](https://discordapp.com/oauth2/authorize?client_id=306492836461936640&scope=bot&permissions=335547392) to invite it.~~
+
+NOTE (2019-03-19): This bot is trash and is causing me problems. I'm not going to put it back up until I remake it better, which may be never. Feel free to self-host, though.
 
 It will try to create custom roles for permissions. If denied, then it will go off of user permissions:
 
